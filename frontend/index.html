@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Megatron Parallelism Visualizer</title>
+    <meta name="description" content="Interactive visualizer for NVIDIA Megatron parallelism strategies — Tensor, Pipeline, and Data Parallelism">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Ambient background -->
+    <div class="ambient-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect x="2" y="2" width="12" height="12" rx="2" fill="#76b900" opacity="0.9"/>
+                        <rect x="18" y="2" width="12" height="12" rx="2" fill="#76b900" opacity="0.7"/>
+                        <rect x="2" y="18" width="12" height="12" rx="2" fill="#76b900" opacity="0.5"/>
+                        <rect x="18" y="18" width="12" height="12" rx="2" fill="#76b900" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Megatron Parallelism</h1>
+                    <p class="subtitle">Interactive GPU Distribution Visualizer</p>
+                </div>
+            </div>
+            <div class="header-badge">
+                <span class="badge">Inspired by NVIDIA Megatron-Core</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-nav">
+        <div class="tab-container">
+            <button class="tab active" data-tab="tensor" id="tab-tensor">
+                <span class="tab-icon">⊞</span>
+                <span class="tab-label">Tensor Parallelism</span>
+                <span class="tab-desc">Split layers across GPUs</span>
+            </button>
+            <button class="tab" data-tab="pipeline" id="tab-pipeline">
+                <span class="tab-icon">⟿</span>
+                <span class="tab-label">Pipeline Parallelism</span>
+                <span class="tab-desc">Stage layers in a pipeline</span>
+            </button>
+            <button class="tab" data-tab="data" id="tab-data">
+                <span class="tab-icon">⊡</span>
+                <span class="tab-label">Data Parallelism</span>
+                <span class="tab-desc">Split batches across replicas</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Tensor Parallelism Panel -->
+        <section class="panel active" id="panel-tensor">
+            <div class="panel-header">
+                <div>
+                    <h2>Tensor Parallelism</h2>
+                    <p class="panel-subtitle">
+                        Splits individual weight matrices across GPUs. Each GPU computes a partial result,
+                        then they communicate to reconstruct the full output.
+                    </p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label for="tp-hidden-size">Hidden Size</label>
+                    <div class="slider-row">
+                        <input type="range" id="tp-hidden-size" min="128" max="4096" step="128" value="512">
+                        <span class="slider-value" id="tp-hidden-size-val">512</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="tp-num-gpus">Number of GPUs</label>
+                    <div class="slider-row">
+                        <input type="range" id="tp-num-gpus" min="2" max="8" step="1" value="4">
+                        <span class="slider-value" id="tp-num-gpus-val">4</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Split Type</label>
+                    <div class="toggle-group">
+                        <button class="toggle active" data-value="column" id="tp-type-column">Column</button>
+                        <button class="toggle" data-value="row" id="tp-type-row">Row</button>
+                    </div>
+                </div>
+                <button class="btn-play" id="tp-animate">
+                    <span>▶</span> Animate
+                </button>
+            </div>
+
+            <div class="viz-container" id="tp-viz"></div>
+
+            <div class="info-cards" id="tp-info">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- Pipeline Parallelism Panel -->
+        <section class="panel" id="panel-pipeline">
+            <div class="panel-header">
+                <div>
+                    <h2>Pipeline Parallelism</h2>
+                    <p class="panel-subtitle">
+                        Distributes transformer layers across GPU stages. Uses micro-batch scheduling
+                        to keep all stages busy and minimize "bubble" (idle) time.
+                    </p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label for="pp-layers">Transformer Layers</label>
+                    <div class="slider-row">
+                        <input type="range" id="pp-layers" min="4" max="48" step="4" value="16">
+                        <span class="slider-value" id="pp-layers-val">16</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="pp-gpus">Pipeline Stages (GPUs)</label>
+                    <div class="slider-row">
+                        <input type="range" id="pp-gpus" min="2" max="8" step="1" value="4">
+                        <span class="slider-value" id="pp-gpus-val">4</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="pp-microbatches">Micro-batches</label>
+                    <div class="slider-row">
+                        <input type="range" id="pp-microbatches" min="2" max="16" step="1" value="8">
+                        <span class="slider-value" id="pp-microbatches-val">8</span>
+                    </div>
+                </div>
+                <button class="btn-play" id="pp-animate">
+                    <span>▶</span> Animate
+                </button>
+            </div>
+
+            <div class="viz-container" id="pp-viz"></div>
+
+            <div class="metrics-bar" id="pp-metrics">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- Data Parallelism Panel -->
+        <section class="panel" id="panel-data">
+            <div class="panel-header">
+                <div>
+                    <h2>Data Parallelism</h2>
+                    <p class="panel-subtitle">
+                        Each GPU holds a full copy of the model. The training batch is split
+                        evenly, and gradients are synchronized via All-Reduce.
+                    </p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label for="dp-batch">Batch Size</label>
+                    <div class="slider-row">
+                        <input type="range" id="dp-batch" min="32" max="512" step="32" value="256">
+                        <span class="slider-value" id="dp-batch-val">256</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="dp-gpus">Number of GPUs</label>
+                    <div class="slider-row">
+                        <input type="range" id="dp-gpus" min="2" max="8" step="1" value="4">
+                        <span class="slider-value" id="dp-gpus-val">4</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="dp-accum">Gradient Accumulation</label>
+                    <div class="slider-row">
+                        <input type="range" id="dp-accum" min="1" max="8" step="1" value="1">
+                        <span class="slider-value" id="dp-accum-val">1</span>
+                    </div>
+                </div>
+                <button class="btn-play" id="dp-animate">
+                    <span>▶</span> Animate
+                </button>
+            </div>
+
+            <div class="viz-container" id="dp-viz"></div>
+
+            <div class="metrics-bar" id="dp-metrics">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Built to understand <a href="https://github.com/NVIDIA/Megatron-LM" target="_blank">NVIDIA Megatron-Core</a> parallelism strategies</p>
+    </footer>
+
+    <script src="js/simulator.js"></script>
+    <script src="js/visualizer.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

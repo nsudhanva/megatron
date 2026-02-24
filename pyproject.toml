@@ -1,0 +1,56 @@
+[project]
+name = "megatron-viz"
+version = "0.1.0"
+description = "Interactive visualizer for NVIDIA Megatron parallelism strategies (Tensor, Pipeline, Data)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "modal>=0.73",
+    "torch>=2.6",
+    "numpy>=2.2",
+    "rich>=13.9",
+]
+
+[project.scripts]
+megatron-viz = "megatron_viz.app:main"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9",
+    "mypy>=1.14",
+    "pytest>=8.3",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "RUF",  # ruff-specific rules
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["megatron_viz"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/megatron_viz"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
