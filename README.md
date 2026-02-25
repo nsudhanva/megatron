@@ -1,8 +1,18 @@
 # Megatron Parallelism Visualizer
 
-Interactive visualizer for NVIDIA Megatron-Core parallelism strategies — **Tensor, Pipeline, and Data Parallelism**.
+## Why This Exists
 
-Built to understand how large language models are distributed across GPUs during training.
+Training large language models (GPT, LLaMA, etc.) takes more memory than a single GPU has. A 70B parameter model needs ~140GB just for weights -- a single A100 has 80GB. So you **must** split the work across multiple GPUs.
+
+The question is: *how* do you split it? There are three fundamentally different strategies, and NVIDIA's [Megatron-Core](https://github.com/NVIDIA/Megatron-LM) uses all three simultaneously. Understanding them is hard because they operate at different levels of abstraction and interact in non-obvious ways.
+
+This project makes those strategies interactive and visual:
+
+- **Tensor Parallelism (TP)** -- splits a single weight matrix across GPUs. Each GPU does a partial matmul, then they communicate the result. This is intra-layer parallelism.
+- **Pipeline Parallelism (PP)** -- assigns different layers to different GPUs. Micro-batches flow through stages like a CPU pipeline. The key tradeoff is "bubble" time (idle GPUs waiting for data).
+- **Data Parallelism (DP)** -- the simplest: every GPU has the full model, but each processes a different chunk of the batch. Gradients are averaged via All-Reduce at the end.
+
+In production, Megatron uses all three at once ("3D parallelism"). For example, 64 GPUs might be organized as DP=4 x PP=4 x TP=4. This project lets you see exactly what happens at each level.
 
 ## Architecture
 
