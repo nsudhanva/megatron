@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Megatron Parallelism Visualizer</title>
-    <meta name="description" content="Interactive visualizer for NVIDIA Megatron parallelism strategies — Tensor, Pipeline, and Data Parallelism">
+    <meta name="description"
+        content="Interactive visualizer for NVIDIA Megatron parallelism strategies — Tensor, Pipeline, and Data Parallelism">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
 
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -18,6 +22,7 @@
 
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <!-- Ambient background -->
     <div class="ambient-bg">
@@ -32,10 +37,10 @@
             <div class="logo">
                 <div class="logo-icon">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <rect x="2" y="2" width="12" height="12" rx="2" fill="#76b900" opacity="0.9"/>
-                        <rect x="18" y="2" width="12" height="12" rx="2" fill="#76b900" opacity="0.7"/>
-                        <rect x="2" y="18" width="12" height="12" rx="2" fill="#76b900" opacity="0.5"/>
-                        <rect x="18" y="18" width="12" height="12" rx="2" fill="#76b900" opacity="0.3"/>
+                        <rect x="2" y="2" width="12" height="12" rx="2" fill="#76b900" opacity="0.9" />
+                        <rect x="18" y="2" width="12" height="12" rx="2" fill="#76b900" opacity="0.7" />
+                        <rect x="2" y="18" width="12" height="12" rx="2" fill="#76b900" opacity="0.5" />
+                        <rect x="18" y="18" width="12" height="12" rx="2" fill="#76b900" opacity="0.3" />
                     </svg>
                 </div>
                 <div>
@@ -43,8 +48,9 @@
                     <p class="subtitle">Interactive GPU Distribution Visualizer</p>
                 </div>
             </div>
-            <div class="header-badge">
+            <div class="header-badges">
                 <span class="badge">Inspired by NVIDIA Megatron-Core</span>
+                <span class="badge badge-live" id="api-status">☁ API: Checking…</span>
             </div>
         </div>
     </header>
@@ -66,6 +72,11 @@
                 <span class="tab-icon">⊡</span>
                 <span class="tab-label">Data Parallelism</span>
                 <span class="tab-desc">Split batches across replicas</span>
+            </button>
+            <button class="tab" data-tab="benchmark" id="tab-benchmark">
+                <span class="tab-icon">⚡</span>
+                <span class="tab-label">GPU Benchmark</span>
+                <span class="tab-desc">Real T4 GPU timing</span>
             </button>
         </div>
     </nav>
@@ -109,12 +120,23 @@
                 <button class="btn-play" id="tp-animate">
                     <span>▶</span> Animate
                 </button>
+                <button class="btn-cloud" id="tp-cloud">
+                    <span>☁</span> Run on Cloud
+                </button>
             </div>
 
             <div class="viz-container" id="tp-viz"></div>
 
             <div class="info-cards" id="tp-info">
                 <!-- Populated by JS -->
+            </div>
+
+            <div class="api-response" id="tp-response" style="display:none">
+                <div class="api-response-header">
+                    <span class="api-response-title">☁ Cloud API Response</span>
+                    <span class="api-response-time" id="tp-response-time"></span>
+                </div>
+                <pre class="api-response-body" id="tp-response-body"></pre>
             </div>
         </section>
 
@@ -155,12 +177,23 @@
                 <button class="btn-play" id="pp-animate">
                     <span>▶</span> Animate
                 </button>
+                <button class="btn-cloud" id="pp-cloud">
+                    <span>☁</span> Run on Cloud
+                </button>
             </div>
 
             <div class="viz-container" id="pp-viz"></div>
 
             <div class="metrics-bar" id="pp-metrics">
                 <!-- Populated by JS -->
+            </div>
+
+            <div class="api-response" id="pp-response" style="display:none">
+                <div class="api-response-header">
+                    <span class="api-response-title">☁ Cloud API Response</span>
+                    <span class="api-response-time" id="pp-response-time"></span>
+                </div>
+                <pre class="api-response-body" id="pp-response-body"></pre>
             </div>
         </section>
 
@@ -201,6 +234,9 @@
                 <button class="btn-play" id="dp-animate">
                     <span>▶</span> Animate
                 </button>
+                <button class="btn-cloud" id="dp-cloud">
+                    <span>☁</span> Run on Cloud
+                </button>
             </div>
 
             <div class="viz-container" id="dp-viz"></div>
@@ -208,16 +244,68 @@
             <div class="metrics-bar" id="dp-metrics">
                 <!-- Populated by JS -->
             </div>
+
+            <div class="api-response" id="dp-response" style="display:none">
+                <div class="api-response-header">
+                    <span class="api-response-title">☁ Cloud API Response</span>
+                    <span class="api-response-time" id="dp-response-time"></span>
+                </div>
+                <pre class="api-response-body" id="dp-response-body"></pre>
+            </div>
+        </section>
+
+        <!-- GPU Benchmark Panel -->
+        <section class="panel" id="panel-benchmark">
+            <div class="panel-header">
+                <div>
+                    <h2>GPU Benchmark</h2>
+                    <p class="panel-subtitle">
+                        Run real matrix multiplications on an NVIDIA T4 GPU via Modal.
+                        Compares full-size vs half-size matmul to demonstrate tensor parallelism speedup.
+                    </p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label for="bench-hidden">Matrix Size (Hidden Dim)</label>
+                    <div class="slider-row">
+                        <input type="range" id="bench-hidden" min="256" max="4096" step="256" value="1024">
+                        <span class="slider-value" id="bench-hidden-val">1024</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="bench-iters">Iterations</label>
+                    <div class="slider-row">
+                        <input type="range" id="bench-iters" min="10" max="500" step="10" value="100">
+                        <span class="slider-value" id="bench-iters-val">100</span>
+                    </div>
+                </div>
+                <button class="btn-cloud btn-cloud-lg" id="bench-run">
+                    <span>⚡</span> Run on T4 GPU
+                </button>
+            </div>
+
+            <div class="benchmark-results" id="bench-results">
+                <div class="bench-placeholder">
+                    <p>Click <strong>Run on T4 GPU</strong> to execute real matrix operations on an NVIDIA T4 in the
+                        cloud.</p>
+                    <p class="bench-note">First run may take ~30s for GPU cold start. Subsequent runs are instant.</p>
+                </div>
+            </div>
         </section>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Built to understand <a href="https://github.com/NVIDIA/Megatron-LM" target="_blank">NVIDIA Megatron-Core</a> parallelism strategies</p>
+        <p>Built to understand <a href="https://github.com/NVIDIA/Megatron-LM" target="_blank">NVIDIA Megatron-Core</a>
+            parallelism strategies</p>
     </footer>
 
     <script src="js/simulator.js"></script>
     <script src="js/visualizer.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/app.js"></script>
 </body>
+
 </html>

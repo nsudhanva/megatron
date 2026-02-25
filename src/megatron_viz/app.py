@@ -17,9 +17,8 @@ frontend_path = Path(__file__).parent.parent.parent / "frontend"
 pkg_path = Path(__file__).parent  # src/megatron_viz/
 
 # Base image for CPU endpoints — add_local_python_source goes LAST
-base_image = (
-    modal.Image.debian_slim(python_version="3.12")
-    .add_local_python_source("megatron_viz")
+base_image = modal.Image.debian_slim(python_version="3.12").add_local_python_source(
+    "megatron_viz"
 )
 
 # GPU image: need copy=True since pip_install runs after source addition
