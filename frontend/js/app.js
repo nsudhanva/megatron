@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const bodyPre = document.getElementById(bodyPreId);
 
         btn.classList.add('loading');
-        btn.innerHTML = '<span>⟳</span> Calling API…';
+        btn.innerHTML = 'Calling API...';
         responseDiv.style.display = 'none';
 
         try {
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
             responseDiv.style.display = 'block';
         } finally {
             btn.classList.remove('loading');
-            btn.innerHTML = '<span>☁</span> Run on Cloud';
+            btn.innerHTML = 'Run on Cloud';
         }
     }
 
@@ -198,10 +198,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const iters = parseInt(document.getElementById('bench-iters').value);
 
         btn.classList.add('loading');
-        btn.innerHTML = '<span>⟳</span> Running on T4 GPU…';
+        btn.innerHTML = 'Running on T4 GPU...';
         resultsDiv.innerHTML = `
             <div class="bench-placeholder">
-                <p>⟳ Running ${iters} iterations of ${hs}×${hs} matmul on T4 GPU…</p>
+                <p>Running ${iters} iterations of ${hs}x${hs} matmul on T4 GPU...</p>
                 <p class="bench-note">This may take ~30s on first run (GPU cold start).</p>
             </div>
         `;
@@ -244,13 +244,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             resultsDiv.innerHTML = `
                 <div class="bench-placeholder">
-                    <p style="color: #e94560">❌ ${err.message}</p>
+                    <p style="color: #e94560">Error: ${err.message}</p>
                     <p class="bench-note">Make sure the app is deployed: uv run modal deploy src/megatron_viz/app.py</p>
                 </div>
             `;
         } finally {
             btn.classList.remove('loading');
-            btn.innerHTML = '<span>⚡</span> Run on T4 GPU';
+            btn.innerHTML = 'Run on T4 GPU';
         }
     });
 
@@ -260,14 +260,14 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const ok = await ModalAPI.healthCheck();
             if (ok) {
-                badge.textContent = '☁ API: Online';
+                badge.textContent = 'API: Online';
                 badge.classList.add('online');
             } else {
-                badge.textContent = '☁ API: Offline';
+                badge.textContent = 'API: Offline';
                 badge.classList.add('offline');
             }
         } catch {
-            badge.textContent = '☁ API: Offline';
+            badge.textContent = 'API: Offline';
             badge.classList.add('offline');
         }
     })();

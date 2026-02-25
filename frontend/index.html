@@ -50,7 +50,7 @@
             </div>
             <div class="header-badges">
                 <span class="badge">Inspired by NVIDIA Megatron-Core</span>
-                <span class="badge badge-live" id="api-status">☁ API: Checking…</span>
+                <span class="badge badge-live" id="api-status">API: Checking...</span>
             </div>
         </div>
     </header>
@@ -59,22 +59,22 @@
     <nav class="tab-nav">
         <div class="tab-container">
             <button class="tab active" data-tab="tensor" id="tab-tensor">
-                <span class="tab-icon">⊞</span>
+                <span class="tab-icon">TP</span>
                 <span class="tab-label">Tensor Parallelism</span>
                 <span class="tab-desc">Split layers across GPUs</span>
             </button>
             <button class="tab" data-tab="pipeline" id="tab-pipeline">
-                <span class="tab-icon">⟿</span>
+                <span class="tab-icon">PP</span>
                 <span class="tab-label">Pipeline Parallelism</span>
                 <span class="tab-desc">Stage layers in a pipeline</span>
             </button>
             <button class="tab" data-tab="data" id="tab-data">
-                <span class="tab-icon">⊡</span>
+                <span class="tab-icon">DP</span>
                 <span class="tab-label">Data Parallelism</span>
                 <span class="tab-desc">Split batches across replicas</span>
             </button>
             <button class="tab" data-tab="benchmark" id="tab-benchmark">
-                <span class="tab-icon">⚡</span>
+                <span class="tab-icon">GPU</span>
                 <span class="tab-label">GPU Benchmark</span>
                 <span class="tab-desc">Real T4 GPU timing</span>
             </button>
@@ -118,10 +118,10 @@
                     </div>
                 </div>
                 <button class="btn-play" id="tp-animate">
-                    <span>▶</span> Animate
+                    Animate
                 </button>
                 <button class="btn-cloud" id="tp-cloud">
-                    <span>☁</span> Run on Cloud
+                    Run on Cloud
                 </button>
             </div>
 
@@ -133,7 +133,7 @@
 
             <div class="api-response" id="tp-response" style="display:none">
                 <div class="api-response-header">
-                    <span class="api-response-title">☁ Cloud API Response</span>
+                    <span class="api-response-title">Cloud API Response</span>
                     <span class="api-response-time" id="tp-response-time"></span>
                 </div>
                 <pre class="api-response-body" id="tp-response-body"></pre>
@@ -175,10 +175,10 @@
                     </div>
                 </div>
                 <button class="btn-play" id="pp-animate">
-                    <span>▶</span> Animate
+                    Animate
                 </button>
                 <button class="btn-cloud" id="pp-cloud">
-                    <span>☁</span> Run on Cloud
+                    Run on Cloud
                 </button>
             </div>
 
@@ -190,7 +190,7 @@
 
             <div class="api-response" id="pp-response" style="display:none">
                 <div class="api-response-header">
-                    <span class="api-response-title">☁ Cloud API Response</span>
+                    <span class="api-response-title">Cloud API Response</span>
                     <span class="api-response-time" id="pp-response-time"></span>
                 </div>
                 <pre class="api-response-body" id="pp-response-body"></pre>
@@ -232,10 +232,10 @@
                     </div>
                 </div>
                 <button class="btn-play" id="dp-animate">
-                    <span>▶</span> Animate
+                    Animate
                 </button>
                 <button class="btn-cloud" id="dp-cloud">
-                    <span>☁</span> Run on Cloud
+                    Run on Cloud
                 </button>
             </div>
 
@@ -247,7 +247,7 @@
 
             <div class="api-response" id="dp-response" style="display:none">
                 <div class="api-response-header">
-                    <span class="api-response-title">☁ Cloud API Response</span>
+                    <span class="api-response-title">Cloud API Response</span>
                     <span class="api-response-time" id="dp-response-time"></span>
                 </div>
                 <pre class="api-response-body" id="dp-response-body"></pre>
@@ -282,7 +282,7 @@
                     </div>
                 </div>
                 <button class="btn-cloud btn-cloud-lg" id="bench-run">
-                    <span>⚡</span> Run on T4 GPU
+                    Run on T4 GPU
                 </button>
             </div>
 

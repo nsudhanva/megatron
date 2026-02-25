@@ -188,6 +188,16 @@ graph TD
     style T fill:#3a1a1a,stroke:#e94560,color:#fff
 ```
 
+## Frontend Features
+
+The interactive frontend at `frontend/index.html` provides:
+
+- **Client-side simulation** -- instant feedback as you adjust sliders (hidden size, GPU count, layers, batch size)
+- **Animate button** -- GSAP-powered cinematic animations of each parallelism strategy
+- **Run on Cloud button** -- fetches live data from the deployed Modal endpoints and displays the JSON response with round-trip timing
+- **GPU Benchmark tab** -- runs real matrix multiplications on a T4 GPU via Modal and shows full vs half matmul timing with theoretical speedup
+- **API status indicator** -- header badge that checks if the Modal API is online
+
 ## Quick Start
 
 ```bash
@@ -238,6 +248,7 @@ graph TD
     JS --> AppJS["app.js<br/>Tab/control wiring"]
     JS --> SimJS["simulator.js<br/>Client-side simulation"]
     JS --> VizJS["visualizer.js<br/>D3.js + GSAP rendering"]
+    JS --> ApiJS["api.js<br/>Modal API client"]
 
     Tests --> TestSim["test_simulator.py<br/>15 unit tests"]
 
@@ -245,6 +256,7 @@ graph TD
     style Sim fill:#1a3a1a,stroke:#76b900,color:#fff
     style App fill:#1a3a1a,stroke:#76b900,color:#fff
     style VizJS fill:#1a2a3a,stroke:#00b4d8,color:#fff
+    style ApiJS fill:#1a2a3a,stroke:#00b4d8,color:#fff
     style TestSim fill:#3a2a1a,stroke:#f4a261,color:#fff
 ```
 

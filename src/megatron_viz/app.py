@@ -231,6 +231,6 @@ def main() -> None:
     console.print(table)
 
     console.print(
-        "\n[bold green]✓ All simulations complete![/bold green] "
+        "\n[bold green]All simulations complete![/bold green] "
         "Deploy with: [cyan]modal deploy src/megatron_viz/app.py[/cyan]\n"
     )
