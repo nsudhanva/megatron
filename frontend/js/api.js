@@ -11,6 +11,7 @@ const ModalAPI = {
         pipelineParallel: `${API_BASE}-api-pipeline-parallel.modal.run`,
         dataParallel: `${API_BASE}-api-data-parallel.modal.run`,
         gpuBenchmark: `${API_BASE}-api-gpu-benchmark.modal.run`,
+        multiGpuBenchmark: `${API_BASE}-api-multi-gpu-benchmark.modal.run`,
     },
 
     /**
@@ -58,6 +59,13 @@ const ModalAPI = {
 
     async gpuBenchmark(hiddenSize, numIterations) {
         return this.fetch(this.endpoints.gpuBenchmark, {
+            hidden_size: hiddenSize,
+            num_iterations: numIterations,
+        });
+    },
+
+    async multiGpuBenchmark(hiddenSize, numIterations) {
+        return this.fetch(this.endpoints.multiGpuBenchmark, {
             hidden_size: hiddenSize,
             num_iterations: numIterations,
         });

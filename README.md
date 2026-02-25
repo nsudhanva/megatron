@@ -22,11 +22,12 @@ graph LR
         A["Frontend<br/>HTML / D3.js / GSAP"] -->|instant| B["Client Simulator<br/>JavaScript"]
         A -->|"API call<br/>(optional)"| C
     end
-    subgraph "Modal Cloud (T4 GPU)"
-        C["FastAPI Endpoints"] --> D["Tensor Parallel Demo"]
-        C --> E["Pipeline Parallel Demo"]
-        C --> F["Data Parallel Demo"]
-        C --> G["GPU Benchmark<br/>(real matmul timing)"]
+    subgraph "Modal Cloud"
+        C["FastAPI Endpoints"] --> D["Tensor Parallel Sim"]
+        C --> E["Pipeline Parallel Sim"]
+        C --> F["Data Parallel Sim"]
+        C --> G["1x T4 Benchmark"]
+        C --> H["2x T4 Real TP"]
     end
     style A fill:#1a1a2e,stroke:#76b900,color:#fff
     style B fill:#1a1a2e,stroke:#00b4d8,color:#fff
@@ -35,6 +36,7 @@ graph LR
     style E fill:#0f3460,stroke:#76b900,color:#fff
     style F fill:#0f3460,stroke:#76b900,color:#fff
     style G fill:#0f3460,stroke:#e94560,color:#fff
+    style H fill:#0f3460,stroke:#e94560,color:#fff
 ```
 
 ## How Megatron Parallelism Works
@@ -198,15 +200,16 @@ graph TD
     style T fill:#3a1a1a,stroke:#e94560,color:#fff
 ```
 
-## Frontend Features
+## What the App Does
 
-The interactive frontend at `frontend/index.html` provides:
+Open `frontend/index.html`. There are four tabs:
 
-- **Client-side simulation** -- instant feedback as you adjust sliders (hidden size, GPU count, layers, batch size)
-- **Animate button** -- GSAP-powered cinematic animations of each parallelism strategy
-- **Run on Cloud button** -- fetches live data from the deployed Modal endpoints and displays the JSON response with round-trip timing
-- **GPU Benchmark tab** -- runs real matrix multiplications on a T4 GPU via Modal and shows full vs half matmul timing with theoretical speedup
-- **API status indicator** -- header badge that checks if the Modal API is online
+1. **Tensor / Pipeline / Data Parallelism** -- adjust sliders, see the simulation update instantly via client-side JS. Hit "Animate" for a GSAP animation. Hit "Run on Cloud" to fetch real data from the Modal API.
+2. **GPU Benchmark** -- two sections:
+   - **Single GPU (1x T4)**: runs full vs half matmul, renders a D3 bar chart and a matrix split diagram showing how TP would divide the weight matrix
+   - **Real Tensor Parallelism (2x T4)**: runs actual column-parallel matmul across 2 physical GPUs, shows a D3 comparison chart (1 GPU vs 2 GPU), a stacked communication breakdown bar, speedup, and parallel efficiency
+
+The key insight the benchmark demonstrates: splitting a matmul across 2 GPUs makes it faster, but communication overhead eats into the speedup. You can see exactly how much by comparing the "actual speedup" vs the ideal 2x.
 
 ## Quick Start
 
@@ -226,7 +229,7 @@ Runs the **local entrypoint** (`main()` function). This executes the simulation 
 
 ### `uv run modal deploy src/megatron_viz/app.py`
 
-Deploys the app to Modal's cloud. This creates **persistent HTTPS endpoints** that run on Modal's infrastructure. The CPU endpoints serve simulation data (cold start ~2s); the GPU endpoint runs real matrix operations on a T4 GPU (cold start ~30s).
+Deploys the app to Modal's cloud. This creates **persistent HTTPS endpoints** that run on Modal's infrastructure. The CPU endpoints serve simulation data (cold start ~2s); the GPU endpoints run real matrix operations on T4 GPUs (cold start ~30-60s).
 
 ### Cost Breakdown
 
@@ -235,9 +238,10 @@ Deploys the app to Modal's cloud. This creates **persistent HTTPS endpoints** th
 | `modal run` | Local entrypoint only | **Free** (runs on your Mac) |
 | `modal deploy` | Creates cloud endpoints | **Free** until called |
 | CPU endpoints | Simulation on Modal CPU | ~$0.000014/sec (~free) |
-| GPU benchmark | T4 GPU matmul timing | ~$0.59/hr ($30/mo free tier) |
+| 1x T4 benchmark | Single GPU matmul timing | ~$0.59/hr |
+| 2x T4 benchmark | Real 2-GPU tensor parallelism | ~$1.18/hr |
 
-> **Note:** Modal's starter tier gives you $30/month in free credits. The CPU simulation endpoints cost virtually nothing. Only the GPU benchmark endpoint consumes meaningful credits, and each call takes <1 second.
+> **Note:** Modal's starter tier gives you $30/month in free credits. CPU endpoints cost virtually nothing. Each GPU benchmark call takes <5 seconds, so even the 2x T4 endpoint costs fractions of a cent per run.
 
 ## Project Structure
 
@@ -258,6 +262,7 @@ graph TD
     JS --> AppJS["app.js<br/>Tab/control wiring"]
     JS --> SimJS["simulator.js<br/>Client-side simulation"]
     JS --> VizJS["visualizer.js<br/>D3.js + GSAP rendering"]
+    JS --> BenchJS["bench-viz.js<br/>D3 benchmark charts"]
     JS --> ApiJS["api.js<br/>Modal API client"]
 
     Tests --> TestSim["test_simulator.py<br/>15 unit tests"]
@@ -266,6 +271,7 @@ graph TD
     style Sim fill:#1a3a1a,stroke:#76b900,color:#fff
     style App fill:#1a3a1a,stroke:#76b900,color:#fff
     style VizJS fill:#1a2a3a,stroke:#00b4d8,color:#fff
+    style BenchJS fill:#1a2a3a,stroke:#00b4d8,color:#fff
     style ApiJS fill:#1a2a3a,stroke:#00b4d8,color:#fff
     style TestSim fill:#3a2a1a,stroke:#f4a261,color:#fff
 ```

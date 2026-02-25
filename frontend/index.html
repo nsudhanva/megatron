@@ -260,12 +260,14 @@
                 <div>
                     <h2>GPU Benchmark</h2>
                     <p class="panel-subtitle">
-                        Run real matrix multiplications on an NVIDIA T4 GPU via Modal.
-                        Compares full-size vs half-size matmul to demonstrate tensor parallelism speedup.
+                        Run real matrix multiplications on NVIDIA GPUs via Modal.
+                        Compare single-GPU performance against actual 2-GPU tensor parallelism.
                     </p>
                 </div>
             </div>
 
+            <!-- Single GPU Benchmark -->
+            <h3 class="bench-section-title">Single GPU (1x T4)</h3>
             <div class="controls">
                 <div class="control-group">
                     <label for="bench-hidden">Matrix Size (Hidden Dim)</label>
@@ -282,15 +284,44 @@
                     </div>
                 </div>
                 <button class="btn-cloud btn-cloud-lg" id="bench-run">
-                    Run on T4 GPU
+                    Run on 1x T4
                 </button>
             </div>
 
             <div class="benchmark-results" id="bench-results">
                 <div class="bench-placeholder">
-                    <p>Click <strong>Run on T4 GPU</strong> to execute real matrix operations on an NVIDIA T4 in the
-                        cloud.</p>
-                    <p class="bench-note">First run may take ~30s for GPU cold start. Subsequent runs are instant.</p>
+                    <p>Runs full matmul vs half-size matmul on a single T4 to show theoretical TP speedup.</p>
+                    <p class="bench-note">First run may take ~30s for GPU cold start.</p>
+                </div>
+            </div>
+
+            <!-- Multi-GPU Benchmark -->
+            <h3 class="bench-section-title" style="margin-top: 48px">Real Tensor Parallelism (2x T4)</h3>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="multi-hidden">Matrix Size (Hidden Dim)</label>
+                    <div class="slider-row">
+                        <input type="range" id="multi-hidden" min="512" max="8192" step="512" value="2048">
+                        <span class="slider-value" id="multi-hidden-val">2048</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="multi-iters">Iterations</label>
+                    <div class="slider-row">
+                        <input type="range" id="multi-iters" min="10" max="200" step="10" value="50">
+                        <span class="slider-value" id="multi-iters-val">50</span>
+                    </div>
+                </div>
+                <button class="btn-cloud btn-cloud-lg" id="multi-run">
+                    Run on 2x T4
+                </button>
+            </div>
+
+            <div class="benchmark-results" id="multi-results">
+                <div class="bench-placeholder">
+                    <p>Splits weight matrix across 2 physical T4 GPUs, runs column-parallel matmul with real GPU-to-GPU
+                        communication.</p>
+                    <p class="bench-note">Shows actual speedup, communication overhead, and parallel efficiency.</p>
                 </div>
             </div>
         </section>
@@ -304,6 +335,7 @@
 
     <script src="js/simulator.js"></script>
     <script src="js/visualizer.js"></script>
+    <script src="js/bench-viz.js"></script>
     <script src="js/api.js"></script>
     <script src="js/app.js"></script>
 </body>

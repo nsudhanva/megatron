@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             () => ModalAPI.dataParallel(batch, gpus, accum));
     });
 
-    // ── GPU Benchmark ──
+    // ── Single GPU Benchmark ──
     document.getElementById('bench-run').addEventListener('click', async () => {
         const btn = document.getElementById('bench-run');
         const resultsDiv = document.getElementById('bench-results');
@@ -198,48 +198,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const iters = parseInt(document.getElementById('bench-iters').value);
 
         btn.classList.add('loading');
-        btn.innerHTML = 'Running on T4 GPU...';
+        btn.innerHTML = 'Running on 1x T4...';
         resultsDiv.innerHTML = `
             <div class="bench-placeholder">
-                <p>Running ${iters} iterations of ${hs}x${hs} matmul on T4 GPU...</p>
+                <p>Running ${iters} iterations of ${hs}x${hs} matmul on T4...</p>
                 <p class="bench-note">This may take ~30s on first run (GPU cold start).</p>
             </div>
         `;
 
         try {
-            const { data, elapsed } = await ModalAPI.gpuBenchmark(hs, iters);
-
-            resultsDiv.innerHTML = `
-                <div style="width: 100%">
-                    <div class="bench-grid">
-                        <div class="bench-card">
-                            <div class="bench-value" style="color: #00b4d8">${data.full_matmul_ms.toFixed(3)}</div>
-                            <div class="bench-unit">ms</div>
-                            <div class="bench-label">Full Matmul (${hs}×${hs})</div>
-                        </div>
-                        <div class="bench-card">
-                            <div class="bench-value" style="color: #f4a261">${data.half_matmul_ms.toFixed(3)}</div>
-                            <div class="bench-unit">ms</div>
-                            <div class="bench-label">Half Matmul (${hs}×${hs / 2})</div>
-                        </div>
-                        <div class="bench-card highlight">
-                            <div class="bench-value">${data.theoretical_speedup.toFixed(2)}×</div>
-                            <div class="bench-label">Theoretical TP Speedup</div>
-                        </div>
-                        <div class="bench-card">
-                            <div class="bench-value" style="color: #9b5de5">${elapsed}</div>
-                            <div class="bench-unit">ms</div>
-                            <div class="bench-label">API Round-trip</div>
-                        </div>
-                    </div>
-                    <div class="bench-gpu-name">
-                        ${data.gpu_name} · ${data.num_iterations} iters · via Modal Cloud
-                    </div>
-                </div>
-            `;
-
-            gsap.from('.bench-card', {
-                scale: 0.8, opacity: 0, duration: 0.6, stagger: 0.1, ease: 'back.out(1.7)',
+            const { data } = await ModalAPI.gpuBenchmark(hs, iters);
+            BenchViz.renderSingleGpu('bench-results', data);
+            gsap.from('#bench-results svg, #bench-results .bench-card', {
+                opacity: 0, y: 20, duration: 0.6, stagger: 0.1, ease: 'power2.out',
             });
         } catch (err) {
             resultsDiv.innerHTML = `
@@ -250,7 +221,42 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         } finally {
             btn.classList.remove('loading');
-            btn.innerHTML = 'Run on T4 GPU';
+            btn.innerHTML = 'Run on 1x T4';
+        }
+    });
+
+    // ── Multi-GPU Benchmark ──
+    document.getElementById('multi-run').addEventListener('click', async () => {
+        const btn = document.getElementById('multi-run');
+        const resultsDiv = document.getElementById('multi-results');
+        const hs = parseInt(document.getElementById('multi-hidden').value);
+        const iters = parseInt(document.getElementById('multi-iters').value);
+
+        btn.classList.add('loading');
+        btn.innerHTML = 'Running on 2x T4...';
+        resultsDiv.innerHTML = `
+            <div class="bench-placeholder">
+                <p>Running ${iters} iterations of ${hs}x${hs} column-parallel matmul on 2x T4...</p>
+                <p class="bench-note">First run may take ~60s (2-GPU cold start is slower).</p>
+            </div>
+        `;
+
+        try {
+            const { data } = await ModalAPI.multiGpuBenchmark(hs, iters);
+            BenchViz.renderMultiGpu('multi-results', data);
+            gsap.from('#multi-results svg, #multi-results .bench-card', {
+                opacity: 0, y: 20, duration: 0.6, stagger: 0.1, ease: 'power2.out',
+            });
+        } catch (err) {
+            resultsDiv.innerHTML = `
+                <div class="bench-placeholder">
+                    <p style="color: #e94560">Error: ${err.message}</p>
+                    <p class="bench-note">Make sure the app is deployed: uv run modal deploy src/megatron_viz/app.py</p>
+                </div>
+            `;
+        } finally {
+            btn.classList.remove('loading');
+            btn.innerHTML = 'Run on 2x T4';
         }
     });
 

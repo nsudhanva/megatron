@@ -787,6 +787,25 @@ input[type="range"]::-webkit-slider-thumb:hover {
     justify-content: center;
 }
 
+.bench-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    letter-spacing: -0.01em;
+}
+
+.bench-viz-chart {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.bench-viz-chart svg {
+    width: 100%;
+    height: auto;
+}
+
 .bench-placeholder {
     text-align: center;
     color: var(--text-secondary);
