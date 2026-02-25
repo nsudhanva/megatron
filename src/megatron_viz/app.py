@@ -14,14 +14,19 @@ import modal
 app = modal.App("megatron-viz")
 
 frontend_path = Path(__file__).parent.parent.parent / "frontend"
+pkg_path = Path(__file__).parent  # src/megatron_viz/
 
-# Base image for CPU-only endpoints (Modal cloud requires <=3.12)
-base_image = modal.Image.debian_slim(python_version="3.12")
+# Base image for CPU endpoints — add_local_python_source goes LAST
+base_image = (
+    modal.Image.debian_slim(python_version="3.12")
+    .add_local_python_source("megatron_viz")
+)
 
-# GPU image with PyTorch for benchmark demos
-gpu_image = base_image.pip_install(
-    "torch>=2.6",
-    "numpy>=2.2",
+# GPU image: need copy=True since pip_install runs after source addition
+gpu_image = (
+    modal.Image.debian_slim(python_version="3.12")
+    .pip_install("torch>=2.6", "numpy>=2.2")
+    .add_local_python_source("megatron_viz")
 )
 
 
